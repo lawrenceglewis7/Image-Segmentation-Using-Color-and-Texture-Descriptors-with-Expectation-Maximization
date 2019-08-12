@@ -12,7 +12,7 @@ from scipy import infty
 from sklearn import preprocessing
 from sklearn.utils import shuffle
 from matplotlib import colors as mcolors
-from scipy.misc import imfilter, imread
+#from scipy.misc import imread
 from skimage import color, data, restoration
 from scipy.signal import convolve2d as conv2
 import matplotlib.cm as cm
@@ -35,6 +35,8 @@ _color_codes = {
     5: (227, 25, 227),
     6: (139, 69,   19),
     7: (56, 161,  48)
+	#8: (1,1,1),
+	#9: (250,250,250)
 }
 def plot_results(X, Y_, means, covariances, index, title):
     splot = plt.subplot(2, 1, 1 + index)
@@ -63,89 +65,47 @@ def plot_results(X, Y_, means, covariances, index, title):
 
 
 def test(imtest, gmm, dpgmm):
-
-        	lab1=gmm.predict(imtest)
-        	lab2=dpgmm.predict(imtest)
-
-        	plot_results(imtest, lab1, gmm.means_, gmm.covariances_, 0
-        		,'Gaussian Mixture')
-
-        	plot_results(imtest, lab2, dpgmm.means_, dpgmm.covariances_, 1
-        		,'Bayesian Gaussian Mixture with a Dirichlet process prior')
-
-        	plt.show()
-
-        	return lab1,lab2
+			
+			lab1=gmm.predict(imtest)
+			lab2=dpgmm.predict(imtest)
+			#plot_results(imtest, lab1, gmm.means_, gmm.covariances_, 0
+			#,'Gaussian Mixture')
+			#plot_results(imtest, lab2, dpgmm.means_, dpgmm.covariances_, 1
+			#,'Bayesian Gaussian Mixture with a Dirichlet process prior')
+			#plt.show()
+			return lab1,lab2
 
 #---------Runs GMM Fit on Each Random Combination of 1000 Points, 'num_patches' number of times---------#
 
 def train(num_patches, image,n_samples,w,h):
 
+			for i in range(1, num_patches): #Fit a Gaussian mixture with EM using five components repeatedly with small  random samples from the data
+				imtrain = shuffle(image)
+				imtrain=imtrain[:1000]
 
-	for i in range(1, num_patches): #Fit a Gaussian mixture with EM using five components repeatedly with small  random samples from the data
+			t=time()
+			gmm = mixture.GaussianMixture(n_components=7, covariance_type='full', 
+						tol=0.001, reg_covar=1e-06, max_iter=1200, n_init=1, init_params='kmeans', 
+						warm_start=True).fit(imtrain)
 
-    			imtrain = shuffle(image)
-    			imtrain=imtrain[:1000]
+			print ("Gaussian Mixture Done in %0.3fs." % (time() - t))
 
-        t=time()
-    	gmm = mixture.GaussianMixture(n_components=7, covariance_type='full', 
-        		tol=0.001, reg_covar=1e-06, max_iter=1200, n_init=1, init_params='kmeans', 
-        		warm_start=True).fit(imtrain)
+			t=time()
+		#				 Fit a Dirichlet process Gaussian mixture using five components
+			dpgmm = mixture.BayesianGaussianMixture(n_components=7, covariance_type='full', weight_concentration_prior_type='dirichlet_distribution',
+						tol=0.001, reg_covar=1e-06, max_iter=1200, n_init=1, init_params='kmeans', warm_start=True).fit(imtrain)
 
-	print "Gaussian Mixture Done in %0.3fs." % (time() - t)
-
-	t=time()
-#				 Fit a Dirichlet process Gaussian mixture using five components
-    	dpgmm = mixture.BayesianGaussianMixture(n_components=7, covariance_type='full', weight_concentration_prior_type='dirichlet_distribution',
-          		tol=0.001, reg_covar=1e-06, max_iter=1200, n_init=1, init_params='kmeans', warm_start=True).fit(imtrain)
-
-    	print "Bayesian Gaussian Mixture Done in %0.3fs." % (time() - t)
-    	return gmm, dpgmm
+			print ("Bayesian Gaussian Mixture Done in %0.3fs." % (time() - t))
+			return gmm, dpgmm
 
 
-	print "Normal & Bayesian Gaussian Mixture Done"
+			print ("Normal & Bayesian Gaussian Mixture Done")
 
-	return gmm, dpgmm
+			return gmm, dpgmm
 
-"""
-def fix(image,thresh):
-
-		
-		#image = color.rgb2gray(image)
-		image=restoration.denoise_nl_means(image)
-		gray= cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-   		blurval=cv2.Laplacian(np.uint8(gray), cv2.CV_8U).var()
-   		psf = np.ones((5, 5)) / 25
-        
-   		if blurval>thresh:
-   			print "Blurry!"
-   		else:
-   			print "Not Blurry!"
-
-   			if blurval>thresh:
-   			text="Blur"
-   			image = conv2(image, psf, 'same')
-   			image += 0.1 * image.std() * np.random.standard_normal(image.shape)
-
-   			deconvolved = restoration.unsupervised_wiener(image, psf, 1, clip=False)
-        	#deblurr= cv2.cvtColor(deconvolved, cv2.COLOR_GRAY2BGR)
-        	deblurr = color.gray2rgb(image)
-        	#print deconvolved
-        	fig = plt.figure()
-        	a=fig.add_subplot(1,2,1)
-        	imgplot = plt.imshow(deblurr)
-        	#show original
-        	a=fig.add_subplot(1,2,2)
-        	imgplot = plt.imshow(image)
-        	plt.show()
-        	return deblurr
-
-
-		return image
-"""
 
 def segmented(image,samples,label, num_comp):
-
+	print("got to segmented")
     #Add dimension to [n,] array
 	labels=np.expand_dims(label, axis=0)
 	labels=np.transpose(labels)
@@ -196,7 +156,7 @@ def createData(image, n_samples):
 ##---------Main---------
 
 #LoadImage
-img_src = cv2.imread('10.jpg')
+img_src = cv2.imread('factory.jpg')
 w, h, d = original_shape = tuple(img_src.shape)
 assert d == 3
 
@@ -224,9 +184,10 @@ seg2=segmented(img_src,samples, lab2,7)
 #Concatenate Images and Save
 
 vis = np.concatenate((seg1, seg2), axis=1)
-cv2.imwrite('segmentation.png', vis)
+cv2.imwrite('segmentation1.jpg', seg1)
+cv2.imwrite('segmentation2.jpg', seg2)
 
-#rint "lab1=",lab1
+#print "lab1=",lab1
 #print "lab2=",lab2
 
 cv2.destroyAllWindows()
