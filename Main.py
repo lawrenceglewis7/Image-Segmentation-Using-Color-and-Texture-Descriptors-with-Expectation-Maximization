@@ -156,7 +156,7 @@ def createData(image, n_samples):
 ##---------Main---------
 
 #LoadImage
-img_src = cv2.imread('factory.jpg')
+img_src = cv2.imread('frame1073.jpg')
 w, h, d = original_shape = tuple(img_src.shape)
 assert d == 3
 
@@ -184,8 +184,8 @@ seg2=segmented(img_src,samples, lab2,7)
 #Concatenate Images and Save
 
 vis = np.concatenate((seg1, seg2), axis=1)
-cv2.imwrite('segmentation1.jpg', seg1)
-cv2.imwrite('segmentation2.jpg', seg2)
+cv2.imwrite('segmentation1.png', seg1)
+cv2.imwrite('segmentation2.png', seg2)
 
 #print "lab1=",lab1
 #print "lab2=",lab2

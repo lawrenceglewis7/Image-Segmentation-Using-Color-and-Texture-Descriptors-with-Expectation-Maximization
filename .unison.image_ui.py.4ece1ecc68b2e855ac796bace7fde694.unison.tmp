@@ -32,8 +32,6 @@ def flood_fill(imageSegment, imageOrig, x, y, replace_value):
     return '\n'.join(''.join(line) for line in imageSegment)
 def my_filler(imageSegment, imageOrig, x, y, replace_value):
     global object1
-    global x_cords
-    global y_cords
     print("con same 1")
     print(object1[1])
     #object1 holds two arrays 1 holds x cordinates of boxes 0 holds y cordinates
@@ -48,15 +46,11 @@ def my_filler(imageSegment, imageOrig, x, y, replace_value):
     #object.insert[1,x]
     x_counter = 0
 
-    print(replace_value)
-    print(imageSegment[y, x+x_counter])
     while(np.array_equal(replace_value, imageSegment[y, x+x_counter])):
-        x_cords.append(x+x_counter)
-        y_cords.append(y)
-        object1 = (y_cords,x_cords)
+        object1.insert[0,y]
+        object1.insert[1, x+x_counter]
         x_counter += 1
-
-    object1 = (y_cords,x_cords)
+    print(object1)
     imageOrig[object1] = imageSegment[object1]
 
     return
@@ -67,13 +61,18 @@ def draw_circle(event,x,y,flags,param):
     
     if event == cv2.EVENT_LBUTTONDBLCLK:
         #cv2.circle(imgOrig,(x,y),50,(10,50,0),-1)
+        print("x=")
+        print(x)
+        print("y=")
+        print(y)
         selected_area = np.where(np.all( imgSeg == imgSeg[y,x], axis=-1))
         print(selected_area)
         print(type(selected_area))
         #imgOrig[selected_area] = imgSeg[selected_area]
         seed = imgSeg[y,x]
-        my_filler(imgSeg, imgOrig, x, y, seed)
+        my_filler(imgOrig,imgSeg,x,y,seed)
 
+        #imgOrig[np.argwhere(labeled==ourlabel)] = imgSeg[np.argwhere(labeled==ourlabel)]
 
 # Pick an image to load in a window and bind the function to the window
 imgOrig = cv2.imread('frame1073.jpg')
